@@ -1,0 +1,17 @@
+{
+  "name": "xendevph-cohort-0",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:ArweavePH/xendevph-cohort-0.git",
+  "author": "Xendev PH <xendevph@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@ardrive/turbo-sdk": "^1.9.0",
+    "@irys/query": "^0.0.8",
+    "arweave": "^1.15.1"
+  },
+  "devDependencies": {
+    "dotenv": "^16.4.5",
+    "typescript": "^5.4.5"
+  }
+}
