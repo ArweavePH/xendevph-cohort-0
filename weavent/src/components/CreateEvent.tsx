@@ -3,14 +3,21 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { LuLoader } from "react-icons/lu";
+import { Textarea } from "./ui/textarea";
+import { createData } from "arbundles/web";
+import slugify from "react-slugify";
 
-const CreateEvent = () => {
+const CreateEvent = ({ signer, turbo }: { signer: any; turbo: any }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [data, setData] = useState({
-    email: null,
-    username: null,
     name: null,
+    start_at: null,
+    end_at: null,
+    description: null,
+    banner: "https://i.imgur.com/zohV3Yf.png",
+    location: null,
+    capacity: null,
   });
 
   const updateData = (e: any) => {
@@ -22,55 +29,42 @@ const CreateEvent = () => {
 
   const onSubmit = async (e: any) => {
     e.preventDefault();
-
     setIsLoading(true);
 
-    if (!data.username) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "Username is required!",
-        duration: 1000,
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (!data.email) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "Email is required!",
-        duration: 1000,
-      });
-      setIsLoading(false);
-      return;
-    }
-
-    if (!data.name) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "Name is required!",
-        duration: 1000,
-      });
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      //transaction here
+      if (!signer || !turbo) return;
+
+      const signedDataItem = createData(
+        JSON.stringify({ ...data, slug: slugify(data?.name) }),
+        signer,
+        {
+          tags: [
+            { name: "Content-Type", value: "application/json" },
+            { name: "App-Name", value: "xendevph-weavent" },
+            {
+              name: "Slug",
+              value: slugify(data.name) || "hello-world",
+            },
+          ],
+        }
+      );
+
+      await signedDataItem.sign(signer);
+
+      const uploadResult = await turbo.uploadSignedDataItem({
+        dataItemStreamFactory: () => signedDataItem.getRaw(),
+        dataItemSizeFactory: () => signedDataItem.getRaw().length,
+        signal: AbortSignal.timeout(10_000),
+      });
+
+      console.log(JSON.stringify(uploadResult, null, 2));
 
       toast({
         variant: "default",
         title: "Success",
-        // description: (response.data as any)?.message,
+        description: `TX ID: ${uploadResult.id}`,
         duration: 2000,
       });
-
-      //   console.log(response.data);
-      setIsLoading(false);
-      //   router.push("/home");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -78,46 +72,72 @@ const CreateEvent = () => {
         description: error?.message,
         duration: 1000,
       });
+
       console.error({ error });
+    } finally {
       setIsLoading(false);
     }
-
-    console.log(data);
   };
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="flex flex-col gap-2 px-[24px] pb-[20px] text-white"
-    >
+    <form onSubmit={onSubmit} className="flex flex-col py-4 gap-2">
       <Input
         type="text"
-        placeholder="Name"
+        placeholder="Event Name"
         id="name"
         name="name"
+        className="!bg-black/30 !none"
         disabled={isLoading}
         onChange={updateData}
         required
       />
       <Input
-        type="text"
-        placeholder="Username"
-        id="username"
-        name="username"
+        type="datetime-local"
+        placeholder="Start At"
+        className="!bg-black/30 !none"
+        id="start_at"
+        name="start_at"
         disabled={isLoading}
         onChange={updateData}
       />
       <Input
-        type="email"
-        placeholder="Email"
-        id="email"
-        name="email"
+        type="datetime-local"
+        placeholder="End At"
+        className="!bg-black/30 !none"
+        id="end_at"
+        name="end_at"
+        disabled={isLoading}
+        onChange={updateData}
+      />
+      <Input
+        type="text"
+        placeholder="Capacity"
+        className="!bg-black/30 !none"
+        id="capacity"
+        name="capacity"
+        disabled={isLoading}
+        onChange={updateData}
+      />
+      <Textarea
+        placeholder="Description"
+        className="!bg-black/30 !none min-h-28"
+        id="description"
+        name="description"
+        disabled={isLoading}
+        onChange={updateData}
+      />
+      <Input
+        type="text"
+        placeholder="Location"
+        className="!bg-black/30 !none"
+        id="location"
+        name="location"
         disabled={isLoading}
         onChange={updateData}
       />
       {!isLoading && (
         <Button className="mt-4" type="submit">
-          Register
+          Submit
         </Button>
       )}
       {isLoading && (

@@ -29,36 +29,6 @@ const Home = () => {
     setTurbo(turboInstance);
   };
 
-  const handleSubmit = async () => {
-    if (!signer || !turbo) return;
-
-    const signedDataItem = createData(
-      JSON.stringify({ hello: "World" }),
-      signer,
-      {
-        tags: [
-          { name: "Content-Type", value: "audio/mpeg" },
-          { name: "App-Name", value: "XendevPH-Cohort-0" },
-          { name: "App-Version", value: "0.1.0" },
-          {
-            name: "Title",
-            value: "Rickroll",
-          },
-        ],
-      }
-    );
-
-    await signedDataItem.sign(signer);
-
-    const uploadResult = await turbo.uploadSignedDataItem({
-      dataItemStreamFactory: () => signedDataItem.getRaw(),
-      dataItemSizeFactory: () => signedDataItem.getRaw().length,
-      signal: AbortSignal.timeout(10_000),
-    });
-
-    console.log(JSON.stringify(uploadResult, null, 2));
-  };
-
   useEffect(() => {
     init();
   }, [connected]);
@@ -73,9 +43,10 @@ const Home = () => {
       </div>
       <div className="w-full max-w-7xl mx-auto px-4 flex gap-4">
         <div className="flex-1 border border-dashed border-white/20 gap-4"></div>
-        <div className="w-1/3 border border-white/10 p-4 rounded-2xl backdrop-blur-sm bg-black/30">
-          {/* <button onClick={handleSubmit}>Test Submit</button> */}
-          <CreateEvent />
+        <div className="w-1/3 border border-white/10 py-6 px-8 rounded-2xl backdrop-blur-sm bg-black/30">
+          <p className="text-2xl font-bold">Create Event</p>
+          <p className="text-sm">Fill up form below.</p>
+          <CreateEvent signer={signer} turbo={turbo} />
         </div>
       </div>
     </div>
