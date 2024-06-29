@@ -13,6 +13,7 @@ const Game = () => {
   const [roomState, setRoomState] = useState("WAITING");
   const [roundState, setRoundState] = useState<any>("STARTED");
   const [roundTimer, setRoundTimer] = useState(0);
+  const [roundTimerMain, setRoundTimerMain] = useState(0);
   const [roundQuestion, setRoundQuestion] = useState(null);
   const [roundAnswers, setRoundAnswers] = useState([]);
   const [roundCount, setRoundCount] = useState(1);
@@ -35,10 +36,20 @@ const Game = () => {
   }, [roomCode]);
 
   useEffect(() => {
+    setRoundTimer(roundTimerMain);
+    const intervalId = setInterval(() => {
+      setRoundTimer((old) => old - 1);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [roundTimerMain]);
+
+  useEffect(() => {
     if (!gameState) return;
     setRoomState(gameState?.room_state);
     setRoundState(gameState?.round_state?.state);
-    setRoundTimer(gameState?.round_state?.timer);
+    // setRoundTimer(gameState?.round_state?.timer);
+    setRoundTimerMain(gameState?.round_state?.timer);
     setRoundQuestion(gameState?.round_state?.question?.question);
     setRoundAnswers(gameState?.round_state?.question?.answers);
     setRoundCount(gameState?.room_max_round + 1 - gameState?.round);
@@ -49,7 +60,7 @@ const Game = () => {
     }
 
     if (gameState?.room_state === "DONE") {
-      if (gameState?.close_timer <= 5) {
+      if (gameState?.close_timer <= 30) {
         navigate("/");
       }
     }
@@ -80,45 +91,6 @@ const Game = () => {
   }
 
   return (
-    // <div>
-    //   Game Screen
-    //   <p>Room Code: {roomCode}</p>
-    //   <p>Room State: {roomState}</p>
-    //   <p>Closing Timer: {gameState?.close_timer}</p>
-    //   <p>Players: {JSON.stringify(gameState?.players)}</p>
-    //   <p>Round: {roundCount}</p>
-    //   <p>Round State: {roundState}</p>
-    //   <p>Round Timer: {roundTimer}</p>
-    //   <p>Round Question: {roundQuestion}</p>
-    //   <p>Round Choices: {JSON.stringify(roundAnswers)}</p>
-    //   {roundAnswers && (
-    //     <div className="grid grid-cols-2 max-w-xs">
-    //       {roundAnswers?.map((item, index) => (
-    //         <button
-    //           key={index}
-    //           className={`${
-    //             correctAnswer
-    //               ? myAnswer == item
-    //                 ? myAnswer == correctAnswer
-    //                   ? "bg-green-500"
-    //                   : "bg-red-500"
-    //                 : correctAnswer == item
-    //                 ? "bg-green-500"
-    //                 : "bg-gray-200"
-    //               : myAnswer == item
-    //               ? "bg-gray-500"
-    //               : "bg-gray-200"
-    //           }`}
-    //           onClick={() => {
-    //             sendAnswer(item);
-    //           }}
-    //         >
-    //           {item}
-    //         </button>
-    //       ))}
-    //     </div>
-    //   )}
-    // </div>
     <div className="h-screen bg-blue-500 grid grid-cols-4 text-white">
       <div className="bg-black/40 col-span-1 flex flex-col p-6 gap-6">
         <p className="text-2xl font-bold tracking-widest">PLAYERS</p>
@@ -146,7 +118,7 @@ const Game = () => {
           </div>
         )}
       </div>
-      <div className="col-span-2 flex flex-col items-center p-6">
+      <div className="col-span-3 flex flex-col items-center p-6">
         {roomState === "DONE" && (
           <>
             <p className="text-6xl tracking-widest font-bold">GAME OVER</p>
@@ -219,7 +191,7 @@ const Game = () => {
                 }}
               ></div>
               <div className="absolute inset-0 flex flex-col items-center justify-center uppercase tracking-widest font-bold">
-                Next round in {roundTimer}s
+                GET READY FOR THE NEXT ROUND
               </div>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center">
@@ -262,9 +234,9 @@ const Game = () => {
                   transition: "all 1000ms ease",
                 }}
               ></div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
+              {/* <div className="absolute inset-0 flex flex-col items-center justify-center">
                 {roundTimer}s
-              </div>
+              </div> */}
             </div>
             <div className="flex-1 flex flex-col items-center justify-center w-full">
               <p className="text-2xl">Q: {roundQuestion}</p>
@@ -304,7 +276,6 @@ const Game = () => {
           </>
         )}
       </div>
-      <div className="bg-white col-span-1"></div>
     </div>
   );
 };

@@ -4,7 +4,9 @@ QuizzAR: A Kahoot-like Quiz App Built on Arweave
 
 ## Arweave Deployment
 
-[QuizzAR](https://arweave.net/RbmI3YGuctLCIKnhto-jchvM5c2F5eOblMGsIiUfSbE)
+[QuizzAR v2 x Cron outside process](https://arweave.net/NANp_kcNwP0rvegbhBLRQQUqaVFA1qQ4AaWTDn1Kjqo)
+
+[QuizzAR v1 x Cron inside process](https://arweave.net/RbmI3YGuctLCIKnhto-jchvM5c2F5eOblMGsIiUfSbE)
 
 ## How to Play
 

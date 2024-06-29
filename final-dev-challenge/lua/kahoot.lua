@@ -702,6 +702,66 @@ function() -- handler task to execute on cron message
     end
 end)
 
+Handlers.add("ManualTick", -- handler name
+Handlers.utils.hasMatchingTag("Action", "ManualCron"), -- handler pattern to identify cron message
+function(msg) -- handler task to execute on cron message
+    -- do something
+    for room_code, room in pairs(GAMEROOMS) do
+        if room.state == "WAITING" then
+            if #room.players == room.room_max_player then
+                room.state = "PLAYING"
+            end
+            goto continue
+        end
+
+        if room.state == "PLAYING" then
+            if room.round_state.state == "STARTED" then
+                if room.round_state.timer == 0 then
+                    room.round_state.timer = 10
+                    room.round_state.state = "ENDED"
+                end
+
+                room.round_state.timer = room.round_state.timer - CRON_INTERVAL
+                goto continue
+            else
+                if room.round_state.timer == 0 then
+                    room.round_state.timer = 20
+                    room.round_state.answered = {}
+                    room.round = room.round - 1
+
+                    if room.questions[room.round] then
+                        room.round_state.question = {
+                            question = room.questions[room.round].question,
+                            answers = room.questions[room.round].answers
+                        }
+                    end
+
+                    if room.round <= 0 then
+                        room.state = "DONE"
+                    else
+                        room.round_state.state = "STARTED"
+                    end
+
+                end
+
+                room.round_state.timer = room.round_state.timer - CRON_INTERVAL
+                goto continue
+            end
+        end
+
+        if room.state == "DONE" then
+            if room.timer == 0 then
+                GAMEROOMS[room_code] = nil
+            end
+
+            room.timer = room.timer - CRON_INTERVAL
+            goto continue
+        end
+
+        ::continue::
+    end
+end)
+
 Handlers.add("create_room", Handlers.utils.hasMatchingTag("Action", "CreateRoom"), function(msg)
     local room_name = generateRoomCode(6)
     local room_max_player = json.decode(msg.Data).room_max_player
